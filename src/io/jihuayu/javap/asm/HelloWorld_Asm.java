@@ -7,9 +7,10 @@ import org.objectweb.asm.Opcodes;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.lang.reflect.Method;
 
 public class HelloWorld_Asm implements Opcodes {
-    public static  String name = "HelloWorld_Asm";
+    private static String name = "HelloWorld";
     public static void main(String[]arg) throws Exception{
         ClassWriter cw = new ClassWriter(0);
         MethodVisitor mv;
@@ -18,13 +19,15 @@ public class HelloWorld_Asm implements Opcodes {
             mv = cw.visitMethod(ACC_PUBLIC + ACC_STATIC, "main", "([Ljava/lang/String;)V", null, null);
             mv.visitFieldInsn(GETSTATIC, "java/lang/System", "out", "Ljava/io/PrintStream;");
             mv.visitLdcInsn("Hello World");
-            mv.visitMethodInsn(INVOKEVIRTUAL, "java/io/PrintStream", "println", "([Ljava/lang/String;)V", false);
+            mv.visitMethodInsn(INVOKEVIRTUAL, "java/io/PrintStream", "println", "(Ljava/lang/String;)V", false);
             mv.visitInsn(RETURN);
-            mv.visitMaxs(100, 1);
+            mv.visitMaxs(64, 10);
             mv.visitEnd();
         }
         cw.visitEnd();
         utils.saveBytecodeToClassFile(name, cw.toByteArray());
+        Class<?> clazz =  AsmLoader.run(name,cw.toByteArray());
+        Method main = clazz.getMethod("main",String[].class);
+        main.invoke(null, (Object)new String[]{});
     }
-
 }
